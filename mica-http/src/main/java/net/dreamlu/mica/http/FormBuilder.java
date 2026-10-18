@@ -1,0 +1,76 @@
+/*
+ * Copyright (c) 2019-2029, Dreamlu (596392912@qq.com & www.dreamlu.net).
+ * <p>
+ * Licensed under the GNU LESSER GENERAL PUBLIC LICENSE 3.0;
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.gnu.org/licenses/lgpl.html
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package net.dreamlu.mica.http;
+
+import okhttp3.FormBody;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Map;
+import java.util.function.Consumer;
+
+/**
+ * 表单构造器
+ *
+ * @author L.cm
+ */
+public class FormBuilder {
+	private final HttpRequest request;
+	private final FormBody.Builder formBuilder;
+
+	FormBuilder(HttpRequest request) {
+		this.request = request;
+		this.formBuilder = new FormBody.Builder();
+	}
+
+	public FormBuilder add(String name, @Nullable Object value) {
+		if (value != null) {
+			this.formBuilder.add(name, HttpRequest.handleValue(value));
+		}
+		return this;
+	}
+
+	public FormBuilder addMap(@Nullable Map<String, Object> formMap) {
+		if (formMap != null && !formMap.isEmpty()) {
+			formMap.forEach(this::add);
+		}
+		return this;
+	}
+
+	public FormBuilder addEncoded(String name, @Nullable Object encodedValue) {
+		if (encodedValue != null) {
+			this.formBuilder.addEncoded(name, HttpRequest.handleValue(encodedValue));
+		}
+		return this;
+	}
+
+	public FormBuilder add(Consumer<FormBody.Builder> consumer) {
+		consumer.accept(this.formBuilder);
+		return this;
+	}
+
+	public HttpRequest build() {
+		return this.request.form(this.formBuilder.build());
+	}
+
+	public Exchange execute() {
+		return this.build().execute();
+	}
+
+	public AsyncExchange async() {
+		return this.build().async();
+	}
+}
